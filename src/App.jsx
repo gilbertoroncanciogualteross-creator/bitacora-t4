@@ -45,6 +45,10 @@ function App() {
     setObjetivo('')
   }
 
+  function handleDelete(id) {
+    setEntries((prev) => prev.filter((entry) => entry.id !== id))
+  }
+
   return (
     <main className="bitacora">
       <h1>Bitácora</h1>
@@ -108,6 +112,14 @@ function App() {
                   {entry.horas} {entry.horas === 1 ? 'hora' : 'horas'}
                 </span>
                 <span>{entry.objetivo}</span>
+                <button
+                  type="button"
+                  className="bitacora-eliminar"
+                  onClick={() => handleDelete(entry.id)}
+                  aria-label={`Eliminar registro del ${entry.fecha}, ${entry.objetivo}`}
+                >
+                  Eliminar
+                </button>
               </li>
             ))}
           </ul>

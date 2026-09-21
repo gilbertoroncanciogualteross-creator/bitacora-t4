@@ -1,121 +1,119 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useEffect, useState } from 'react'
 import './App.css'
 
+const STORAGE_KEY = 'bitacora-entries'
+const OBJETIVOS = ['Frontend', 'DSA', 'Inglés', 'Cierre']
+
+function loadEntries() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [entries, setEntries] = useState(loadEntries)
+  const [fecha, setFecha] = useState('')
+  const [horas, setHoras] = useState('')
+  const [objetivo, setObjetivo] = useState('')
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+  }, [entries])
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    const horasNum = Number(horas)
+    if (!fecha || !objetivo || Number.isNaN(horasNum) || horasNum <= 0) {
+      return
+    }
+
+    const nueva = {
+      id: crypto.randomUUID(),
+      fecha,
+      horas: horasNum,
+      objetivo,
+    }
+
+    setEntries((prev) => [nueva, ...prev])
+    setFecha('')
+    setHoras('')
+    setObjetivo('')
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <main className="bitacora">
+      <h1>Bitácora</h1>
+      <p className="bitacora-intro">Registra fecha, horas y objetivo de estudio.</p>
 
-      <div className="ticks"></div>
+      <form className="bitacora-form" onSubmit={handleSubmit}>
+        <label>
+          Fecha
+          <input
+            type="date"
+            name="fecha"
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+            required
+          />
+        </label>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
+        <label>
+          Horas
+          <input
+            type="number"
+            name="horas"
+            min="0.25"
+            step="0.25"
+            value={horas}
+            onChange={(e) => setHoras(e.target.value)}
+            required
+          />
+        </label>
+
+        <label>
+          Objetivo
+          <select
+            name="objetivo"
+            value={objetivo}
+            onChange={(e) => setObjetivo(e.target.value)}
+            required
+          >
+            <option value="">Selecciona un objetivo</option>
+            {OBJETIVOS.map((opcion) => (
+              <option key={opcion} value={opcion}>
+                {opcion}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button type="submit">Agregar</button>
+      </form>
+
+      <section className="bitacora-lista" aria-live="polite">
+        <h2>Registros</h2>
+        {entries.length === 0 ? (
+          <p className="bitacora-vacio">Aún no hay registros.</p>
+        ) : (
           <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
+            {entries.map((entry) => (
+              <li key={entry.id}>
+                <span>{entry.fecha}</span>
+                <span>
+                  {entry.horas} {entry.horas === 1 ? 'hora' : 'horas'}
+                </span>
+                <span>{entry.objetivo}</span>
+              </li>
+            ))}
           </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+        )}
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </main>
   )
 }
 
